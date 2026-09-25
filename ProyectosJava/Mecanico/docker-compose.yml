@@ -5,16 +5,21 @@ services:
     image: mysql:8.0
     container_name: taller_mysql
     environment:
-      MYSQL_DATABASE: tallermecanico
-      MYSQL_USER: taller
-      MYSQL_PASSWORD: tallerpass
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ${DB_NAME:-tallermecanico}
+      MYSQL_USER: ${DB_USER:-taller}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-tallerpass}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootpassword}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - taller-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -26,11 +31,13 @@ services:
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_NAME: tallermecanico
-      DB_USER: taller
-      DB_PASSWORD: tallerpass
+      DB_NAME: ${DB_NAME:-tallermecanico}
+      DB_USER: ${DB_USER:-taller}
+      DB_PASSWORD: ${DB_PASSWORD:-tallerpass}
+      JWT_SECRET: ${JWT_SECRET:-ClaveSecretaSuperSeguraParaTallerMecanicoJwtToken2026}
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - taller-net
 
