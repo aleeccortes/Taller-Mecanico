@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, CheckCircle2, CalendarPlus, ShieldAlert, Sparkles, Wrench } from 'lucide-react';
+import { Clock, CalendarPlus, Sparkles, Wrench, Image as ImageIcon } from 'lucide-react';
 
 export default function PublicServices({ onSelectService, onOpenIA }) {
   const [servicios, setServicios] = useState([]);
@@ -44,18 +44,11 @@ export default function PublicServices({ onSelectService, onOpenIA }) {
               <CalendarPlus className="w-5 h-5" />
               <span>RESERVAR TURNO AHORA</span>
             </button>
-            <button
-              onClick={onOpenIA}
-              className="bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 font-semibold px-6 py-3.5 rounded-xl text-sm flex items-center space-x-2 transition-all"
-            >
-              <Sparkles className="w-4 h-4 text-indigo-400" />
-              <span>CONSULTAR AL AGENTE DE IA</span>
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Grilla de Servicios */}
+      {/* Grilla de Servicios con Imágenes */}
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -74,40 +67,59 @@ export default function PublicServices({ onSelectService, onOpenIA }) {
             No hay servicios disponibles actualmente.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {servicios.map((s) => (
               <div 
                 key={s.id} 
-                className="bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 hover:border-amber-500/40 rounded-2xl p-6 flex flex-col justify-between shadow-xl transition-all group"
+                className="bg-slate-800/90 hover:bg-slate-800 border border-slate-700/60 hover:border-amber-500/50 rounded-3xl overflow-hidden flex flex-col justify-between shadow-xl transition-all group hover:shadow-2xl"
               >
-                <div className="space-y-4">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-2xl font-bold font-heading text-white tracking-wide group-hover:text-amber-400 transition-colors">
-                      {s.nombre}
-                    </h3>
-                    <span className="text-2xl font-extrabold text-amber-400 font-heading tracking-wider">
+                {/* Imagen del Servicio */}
+                <div className="relative h-48 w-full bg-slate-900 overflow-hidden">
+                  {s.imagenUrl ? (
+                    <img 
+                      src={s.imagenUrl} 
+                      alt={s.nombre} 
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-slate-900 text-slate-700">
+                      <Wrench className="w-16 h-16 opacity-40" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-3 right-3 bg-slate-950/80 backdrop-blur-md border border-slate-700/80 px-3 py-1 rounded-xl">
+                    <span className="text-xl font-extrabold text-amber-400 font-heading tracking-wider">
                       ${Number(s.precio).toLocaleString('es-AR')}
                     </span>
                   </div>
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    {s.descripcion}
-                  </p>
-                  {s.tiempoEstimadoMinutos && (
-                    <div className="flex items-center space-x-1.5 text-xs text-slate-400">
-                      <Clock className="w-3.5 h-3.5 text-amber-500" />
-                      <span>Tiempo estimado: {s.tiempoEstimadoMinutos} min</span>
-                    </div>
-                  )}
                 </div>
 
-                <div className="pt-6 border-t border-slate-700/50 mt-6">
-                  <button
-                    onClick={() => onSelectService(s)}
-                    className="w-full bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 font-bold py-2.5 px-4 rounded-xl text-sm flex items-center justify-center space-x-2 transition-all shadow-md"
-                  >
-                    <CalendarPlus className="w-4 h-4" />
-                    <span>SOLICITAR ESTE SERVICIO</span>
-                  </button>
+                {/* Contenido de la Tarjeta */}
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-3">
+                    <h3 className="text-2xl font-bold font-heading text-white tracking-wide group-hover:text-amber-400 transition-colors">
+                      {s.nombre}
+                    </h3>
+                    <p className="text-slate-300 text-sm leading-relaxed">
+                      {s.descripcion}
+                    </p>
+                    {s.tiempoEstimadoMinutos && (
+                      <div className="flex items-center space-x-1.5 text-xs text-slate-400">
+                        <Clock className="w-3.5 h-3.5 text-amber-500" />
+                        <span>Tiempo estimado: {s.tiempoEstimadoMinutos} min</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-700/50 mt-4">
+                    <button
+                      onClick={() => onSelectService(s)}
+                      className="w-full bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-amber-400 border border-amber-500/30 font-bold py-3 px-4 rounded-xl text-sm flex items-center justify-center space-x-2 transition-all shadow-md"
+                    >
+                      <CalendarPlus className="w-4 h-4" />
+                      <span>SOLICITAR ESTE SERVICIO</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

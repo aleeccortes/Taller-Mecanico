@@ -32,6 +32,7 @@ public class DataInitializer implements CommandLineRunner {
                     .descripcion("Reemplazo de aceite sintético 5W30, filtro de aceite, aire y habitáculo con revisión multipunto.")
                     .precio(new BigDecimal("35000.00"))
                     .tiempoEstimadoMinutos(45)
+                    .imagenUrl("https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=800&q=80")
                     .activo(true)
                     .build());
 
@@ -40,6 +41,7 @@ public class DataInitializer implements CommandLineRunner {
                     .descripcion("Alineación computarizada del tren delantero y trasero + balanceo de las 4 ruedas.")
                     .precio(new BigDecimal("28000.00"))
                     .tiempoEstimadoMinutos(60)
+                    .imagenUrl("https://images.unsplash.com/photo-1578844251758-2f71da64c96f?auto=format&fit=crop&w=800&q=80")
                     .activo(true)
                     .build());
 
@@ -48,14 +50,16 @@ public class DataInitializer implements CommandLineRunner {
                     .descripcion("Reemplazo de pastillas de freno, rectificación de discos y purga de líquido de freno dot4.")
                     .precio(new BigDecimal("55000.00"))
                     .tiempoEstimadoMinutos(90)
+                    .imagenUrl("https://images.unsplash.com/photo-1600792896570-58d048fae08f?auto=format&fit=crop&w=800&q=80")
                     .activo(true)
                     .build());
 
             Servicio s4 = servicioRepository.save(Servicio.builder()
-                    .nombre("Escaneo y Diagnóstico Electrónico OBD2")
+                    .nombre("Escaneo y Diagnóstico OBD2")
                     .descripcion("Diagnóstico completo de computadora, lectura y borrado de códigos de falla ECU.")
                     .precio(new BigDecimal("20000.00"))
                     .tiempoEstimadoMinutos(30)
+                    .imagenUrl("https://images.unsplash.com/photo-1517524008697-84bbe3c3fd98?auto=format&fit=crop&w=800&q=80")
                     .activo(true)
                     .build());
 

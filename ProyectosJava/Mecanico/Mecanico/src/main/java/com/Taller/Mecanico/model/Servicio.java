@@ -29,6 +29,9 @@ public class Servicio {
 
     private Integer tiempoEstimadoMinutos;
 
+    @Column(length = 1000)
+    private String imagenUrl;
+
     @Builder.Default
     private Boolean activo = true;
 }

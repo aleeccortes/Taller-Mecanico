@@ -44,6 +44,7 @@ public class ServicioServiceImpl implements ServicioService {
                 .descripcion(dto.getDescripcion())
                 .precio(dto.getPrecio())
                 .tiempoEstimadoMinutos(dto.getTiempoEstimadoMinutos())
+                .imagenUrl(dto.getImagenUrl())
                 .activo(dto.getActivo() != null ? dto.getActivo() : true)
                 .build();
         Servicio guardado = servicioRepository.save(servicio);
@@ -59,6 +60,7 @@ public class ServicioServiceImpl implements ServicioService {
         servicio.setDescripcion(dto.getDescripcion());
         servicio.setPrecio(dto.getPrecio());
         servicio.setTiempoEstimadoMinutos(dto.getTiempoEstimadoMinutos());
+        servicio.setImagenUrl(dto.getImagenUrl());
         if (dto.getActivo() != null) {
             servicio.setActivo(dto.getActivo());
         }
@@ -82,6 +84,7 @@ public class ServicioServiceImpl implements ServicioService {
                 .descripcion(servicio.getDescripcion())
                 .precio(servicio.getPrecio())
                 .tiempoEstimadoMinutos(servicio.getTiempoEstimadoMinutos())
+                .imagenUrl(servicio.getImagenUrl())
                 .activo(servicio.getActivo())
                 .build();
     }

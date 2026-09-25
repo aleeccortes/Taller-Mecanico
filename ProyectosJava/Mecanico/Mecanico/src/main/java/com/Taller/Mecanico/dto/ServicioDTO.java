@@ -25,5 +25,6 @@ public class ServicioDTO {
     private BigDecimal precio;
 
     private Integer tiempoEstimadoMinutos;
+    private String imagenUrl;
     private Boolean activo;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Wrench, Users, DollarSign, Plus, Trash2, CheckCircle, Clock, XCircle, Search, TrendingUp, TrendingDown, Wallet, KeyRound, Filter, AlertCircle } from 'lucide-react';
+import { Calendar, Wrench, Users, DollarSign, Plus, Trash2, CheckCircle, Clock, XCircle, Search, TrendingUp, TrendingDown, Wallet, KeyRound, Filter, AlertCircle, Image as ImageIcon } from 'lucide-react';
 
 export default function AdminDashboard({ token }) {
   const [subTab, setSubTab] = useState('turnos');
@@ -18,7 +18,7 @@ export default function AdminDashboard({ token }) {
   // Modales
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState(''); // 'servicio', 'mecanico', 'factura', 'clave'
-  const [formServicio, setFormServicio] = useState({ nombre: '', descripcion: '', precio: '', tiempoEstimadoMinutos: 45 });
+  const [formServicio, setFormServicio] = useState({ nombre: '', descripcion: '', precio: '', tiempoEstimadoMinutos: 45, imagenUrl: '' });
   const [formMecanico, setFormMecanico] = useState({ nombre: '', especialidad: '', telefono: '', email: '' });
   const [formFactura, setFormFactura] = useState({ tipo: 'INGRESO', concepto: '', monto: '', metodoPago: 'Efectivo', detalles: '' });
   const [formClave, setFormClave] = useState({ claveActual: '', claveNueva: '' });
@@ -341,12 +341,12 @@ export default function AdminDashboard({ token }) {
         </div>
       )}
 
-      {/* VISTA 2: SERVICIOS */}
+      {/* VISTA 2: SERVICIOS CON IMÁGENES */}
       {subTab === 'servicios' && (
         <div className="space-y-4">
           <div className="flex justify-end">
             <button
-              onClick={() => { setModalType('servicio'); setShowModal(true); }}
+              onClick={() => { setFormServicio({ nombre: '', descripcion: '', precio: '', tiempoEstimadoMinutos: 45, imagenUrl: '' }); setModalType('servicio'); setShowModal(true); }}
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm flex items-center space-x-2 shadow-md"
             >
               <Plus className="w-4 h-4" />
@@ -356,23 +356,30 @@ export default function AdminDashboard({ token }) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {servicios.map((s) => (
-              <div key={s.id} className="bg-slate-800 border border-slate-700 rounded-2xl p-6 flex flex-col justify-between shadow-xl">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl font-bold font-heading text-white">{s.nombre}</h3>
-                    <span className="text-xl font-extrabold text-amber-400 font-heading">
-                      ${Number(s.precio).toLocaleString('es-AR')}
-                    </span>
+              <div key={s.id} className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden flex flex-col justify-between shadow-xl">
+                {s.imagenUrl && (
+                  <div className="h-40 w-full overflow-hidden bg-slate-900 relative">
+                    <img src={s.imagenUrl} alt={s.nombre} className="w-full h-full object-cover" />
                   </div>
-                  <p className="text-slate-300 text-sm">{s.descripcion}</p>
-                </div>
-                <div className="pt-4 border-t border-slate-700 mt-4 flex justify-end">
-                  <button
-                    onClick={() => eliminarServicio(s.id)}
-                    className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                )}
+                <div className="p-5 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold font-heading text-white">{s.nombre}</h3>
+                      <span className="text-xl font-extrabold text-amber-400 font-heading">
+                        ${Number(s.precio).toLocaleString('es-AR')}
+                      </span>
+                    </div>
+                    <p className="text-slate-300 text-sm">{s.descripcion}</p>
+                  </div>
+                  <div className="pt-3 border-t border-slate-700 flex justify-end">
+                    <button
+                      onClick={() => eliminarServicio(s.id)}
+                      className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -551,6 +558,7 @@ export default function AdminDashboard({ token }) {
                 <input required placeholder="Nombre del Servicio" value={formServicio.nombre} onChange={e => setFormServicio({...formServicio, nombre: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />
                 <textarea placeholder="Descripción" value={formServicio.descripcion} onChange={e => setFormServicio({...formServicio, descripcion: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />
                 <input required type="number" step="0.01" placeholder="Precio ($ ARS)" value={formServicio.precio} onChange={e => setFormServicio({...formServicio, precio: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />
+                <input placeholder="URL de la imagen (ej. https://images.unsplash.com/...)" value={formServicio.imagenUrl || ''} onChange={e => setFormServicio({...formServicio, imagenUrl: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />
                 <div className="flex justify-end space-x-2 pt-2">
                   <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-slate-300">Cancelar</button>
                   <button type="submit" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm">Guardar</button>
