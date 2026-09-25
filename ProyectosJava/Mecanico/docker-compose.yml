@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: taller_mysql
+    environment:
+      MYSQL_DATABASE: tallermecanico
+      MYSQL_USER: taller
+      MYSQL_PASSWORD: tallerpass
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - taller-net
+
+  backend:
+    build:
+      context: ./Mecanico
+      dockerfile: Dockerfile
+    container_name: taller_backend
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: tallermecanico
+      DB_USER: taller
+      DB_PASSWORD: tallerpass
+    depends_on:
+      - mysql
+    networks:
+      - taller-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taller_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - taller-net
+
+networks:
+  taller-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
