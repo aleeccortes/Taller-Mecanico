@@ -31,6 +31,13 @@ public class FacturaServiceImpl implements FacturaService {
     }
 
     @Override
+    public List<FacturaDTO> obtenerFacturasPorMes(int anio, int mes) {
+        return facturaRepository.findByAnioYMes(anio, mes).stream()
+                .map(this::convertirAEntidadDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public FacturaDTO obtenerFacturaPorId(Long id) {
         Factura factura = facturaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Factura no encontrada con id: " + id));
@@ -102,6 +109,29 @@ public class FacturaServiceImpl implements FacturaService {
 
         long cantidadIngresos = facturaRepository.findByTipo(TipoFactura.INGRESO).size();
         long cantidadGastos = facturaRepository.findByTipo(TipoFactura.GASTO).size();
+
+        return ResumenFinancieroDTO.builder()
+                .totalIngresos(totalIngresos)
+                .totalGastos(totalGastos)
+                .balanceNeto(balanceNeto)
+                .cantidadFacturasIngreso(cantidadIngresos)
+                .cantidadFacturasGasto(cantidadGastos)
+                .build();
+    }
+
+    @Override
+    public ResumenFinancieroDTO obtenerResumenFinancieroMensual(int anio, int mes) {
+        BigDecimal totalIngresos = facturaRepository.sumarMontoPorTipoYMes(TipoFactura.INGRESO, anio, mes);
+        BigDecimal totalGastos = facturaRepository.sumarMontoPorTipoYMes(TipoFactura.GASTO, anio, mes);
+
+        if (totalIngresos == null) totalIngresos = BigDecimal.ZERO;
+        if (totalGastos == null) totalGastos = BigDecimal.ZERO;
+
+        BigDecimal balanceNeto = totalIngresos.subtract(totalGastos);
+
+        List<Factura> facturasMes = facturaRepository.findByAnioYMes(anio, mes);
+        long cantidadIngresos = facturasMes.stream().filter(f -> f.getTipo() == TipoFactura.INGRESO).count();
+        long cantidadGastos = facturasMes.stream().filter(f -> f.getTipo() == TipoFactura.GASTO).count();
 
         return ResumenFinancieroDTO.builder()
                 .totalIngresos(totalIngresos)

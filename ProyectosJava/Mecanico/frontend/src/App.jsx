@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import Navbar from './components/Navbar';
 import PublicServices from './components/PublicServices';
 import TurnoModal from './components/TurnoModal';
-import AIAgentChat from './components/AIAgentChat';
+import AIAgentWidget from './components/AIAgentWidget';
 import AdminLogin from './components/AdminLogin';
 import AdminDashboard from './components/AdminDashboard';
+import { Lock } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('servicios');
@@ -29,7 +30,8 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans relative">
+      {/* Navegación Superior */}
       <Navbar 
         activeTab={activeTab} 
         setActiveTab={setActiveTab} 
@@ -37,11 +39,12 @@ export default function App() {
         onLogout={handleLogout} 
       />
 
+      {/* Contenido Principal */}
       <main className="flex-1">
         {activeTab === 'servicios' && (
           <PublicServices 
             onSelectService={handleSelectService} 
-            onOpenIA={() => setActiveTab('ia')} 
+            onOpenIA={() => {}} 
           />
         )}
 
@@ -49,12 +52,6 @@ export default function App() {
           <TurnoModal 
             selectedService={selectedService} 
             onClose={() => setActiveTab('servicios')} 
-          />
-        )}
-
-        {activeTab === 'ia' && (
-          <AIAgentChat 
-            onBookTurno={() => setActiveTab('turno')} 
           />
         )}
 
@@ -67,9 +64,31 @@ export default function App() {
         )}
       </main>
 
-      <footer className="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500 space-y-1">
-        <p>© 2026 Taller Mecánico - Sistema Integral de Turnos, Facturación & IA Agent</p>
-        <p>Desarrollado en Spring Boot + React.js + MySQL</p>
+      {/* Burbuja Flotante del Asistente de IA (Presente en la vista de clientes) */}
+      <AIAgentWidget onBookTurno={() => setActiveTab('turno')} />
+
+      {/* Footer con Acceso Discreto para Administrador */}
+      <footer className="bg-slate-900 border-t border-slate-800 py-6 text-center text-xs text-slate-500 space-y-2">
+        <p>© 2026 Taller Mecánico - Servicio Técnico Integral</p>
+        
+        <div className="pt-1 flex justify-center items-center space-x-2">
+          {!token ? (
+            <button
+              onClick={() => setActiveTab('login')}
+              className="text-slate-600 hover:text-slate-400 text-[11px] flex items-center space-x-1 transition-colors"
+            >
+              <Lock className="w-3 h-3" />
+              <span>Acceso Administrativo Privado</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveTab('admin')}
+              className="text-emerald-500 hover:text-emerald-400 font-semibold text-[11px] transition-colors"
+            >
+              • Sesión Admin Activa (Ir al Panel)
+            </button>
+          )}
+        </div>
       </footer>
     </div>
   );

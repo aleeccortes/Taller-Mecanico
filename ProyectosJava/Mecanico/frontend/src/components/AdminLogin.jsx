@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Lock, User, AlertCircle, KeyRound } from 'lucide-react';
+import { ShieldCheck, Lock, User, AlertCircle } from 'lucide-react';
 
 export default function AdminLogin({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
@@ -39,7 +39,7 @@ export default function AdminLogin({ onLoginSuccess }) {
             <ShieldCheck className="w-8 h-8" />
           </div>
           <h2 className="text-3xl font-extrabold font-heading text-white tracking-wide">ACCESO ADMINISTRADOR</h2>
-          <p className="text-slate-400 text-xs">Ingrese sus credenciales para gestionar turnos y facturación</p>
+          <p className="text-slate-400 text-xs">Ingrese sus credenciales de administración</p>
         </div>
 
         {error && (
@@ -59,7 +59,7 @@ export default function AdminLogin({ onLoginSuccess }) {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="Nombre de usuario"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -78,14 +78,6 @@ export default function AdminLogin({ onLoginSuccess }) {
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500"
               />
             </div>
-          </div>
-
-          <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50 text-xs text-slate-400 space-y-1">
-            <p className="font-semibold text-amber-400 flex items-center space-x-1">
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Credenciales por defecto:</span>
-            </p>
-            <p>Usuario: <code className="text-white font-mono">admin</code> | Clave: <code className="text-white font-mono">admin123</code></p>
           </div>
 
           <button

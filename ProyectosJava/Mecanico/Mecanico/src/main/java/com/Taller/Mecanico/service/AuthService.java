@@ -6,4 +6,5 @@ import com.Taller.Mecanico.dto.LoginResponseDTO;
 public interface AuthService {
     LoginResponseDTO iniciarSesion(LoginRequestDTO dto);
     void registrarAdminInicial(String username, String password);
+    void cambiarContrasena(String username, String claveActual, String claveNueva);
 }

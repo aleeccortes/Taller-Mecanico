@@ -20,12 +20,20 @@ public class FacturaController {
     private final FacturaService facturaService;
 
     @GetMapping
-    public ResponseEntity<List<FacturaDTO>> obtenerTodasLasFacturas() {
+    public ResponseEntity<List<FacturaDTO>> obtenerFacturas(@RequestParam(required = false) Integer anio,
+                                                             @RequestParam(required = false) Integer mes) {
+        if (anio != null && mes != null) {
+            return ResponseEntity.ok(facturaService.obtenerFacturasPorMes(anio, mes));
+        }
         return ResponseEntity.ok(facturaService.obtenerTodasLasFacturas());
     }
 
     @GetMapping("/resumen")
-    public ResponseEntity<ResumenFinancieroDTO> obtenerResumenFinanciero() {
+    public ResponseEntity<ResumenFinancieroDTO> obtenerResumenFinanciero(@RequestParam(required = false) Integer anio,
+                                                                          @RequestParam(required = false) Integer mes) {
+        if (anio != null && mes != null) {
+            return ResponseEntity.ok(facturaService.obtenerResumenFinancieroMensual(anio, mes));
+        }
         return ResponseEntity.ok(facturaService.obtenerResumenFinanciero());
     }
 

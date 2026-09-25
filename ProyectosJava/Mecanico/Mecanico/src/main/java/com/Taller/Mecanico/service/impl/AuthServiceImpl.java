@@ -49,4 +49,21 @@ public class AuthServiceImpl implements AuthService {
             usuarioRepository.save(admin);
         }
     }
+
+    @Override
+    public void cambiarContrasena(String username, String claveActual, String claveNueva) {
+        Usuario usuario = usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!passwordEncoder.matches(claveActual, usuario.getPassword())) {
+            throw new RuntimeException("La contraseña actual es incorrecta");
+        }
+
+        if (claveNueva == null || claveNueva.trim().length() < 4) {
+            throw new RuntimeException("La nueva contraseña debe tener al menos 4 caracteres");
+        }
+
+        usuario.setPassword(passwordEncoder.encode(claveNueva));
+        usuarioRepository.save(usuario);
+    }
 }

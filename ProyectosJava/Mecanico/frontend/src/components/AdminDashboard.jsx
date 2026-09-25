@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Wrench, Users, DollarSign, Plus, Trash2, Edit, CheckCircle, Clock, XCircle, Search, TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { Calendar, Wrench, Users, DollarSign, Plus, Trash2, CheckCircle, Clock, XCircle, Search, TrendingUp, TrendingDown, Wallet, KeyRound, Filter, AlertCircle } from 'lucide-react';
 
 export default function AdminDashboard({ token }) {
   const [subTab, setSubTab] = useState('turnos');
@@ -10,29 +10,54 @@ export default function AdminDashboard({ token }) {
   const [resumen, setResumen] = useState(null);
   const [busqueda, setBusqueda] = useState('');
 
-  // Modales y Formularios
+  // Filtros de Facturación Mensual
+  const fechaActual = new Date();
+  const [filtroAnio, setFiltroAnio] = useState(fechaActual.getFullYear());
+  const [filtroMes, setFiltroMes] = useState(fechaActual.getMonth() + 1);
+
+  // Modales
   const [showModal, setShowModal] = useState(false);
-  const [modalType, setModalType] = useState(''); // 'servicio', 'mecanico', 'factura', 'turno'
+  const [modalType, setModalType] = useState(''); // 'servicio', 'mecanico', 'factura', 'clave'
   const [formServicio, setFormServicio] = useState({ nombre: '', descripcion: '', precio: '', tiempoEstimadoMinutos: 45 });
   const [formMecanico, setFormMecanico] = useState({ nombre: '', especialidad: '', telefono: '', email: '' });
   const [formFactura, setFormFactura] = useState({ tipo: 'INGRESO', concepto: '', monto: '', metodoPago: 'Efectivo', detalles: '' });
+  const [formClave, setFormClave] = useState({ claveActual: '', claveNueva: '' });
+  const [mensajeClave, setMensajeClave] = useState(null);
+  const [errorClave, setErrorClave] = useState(null);
 
   const authHeaders = {
     'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json'
   };
 
+  const cargarFacturasMensuales = (anio, mes) => {
+    let urlFacturas = '/api/admin/facturas';
+    let urlResumen = '/api/admin/facturas/resumen';
+    if (anio && mes) {
+      urlFacturas += `?anio=${anio}&mes=${mes}`;
+      urlResumen += `?anio=${anio}&mes=${mes}`;
+    }
+
+    fetch(urlFacturas, { headers: authHeaders }).then(r => r.json()).then(d => Array.isArray(d) && setFacturas(d)).catch(console.error);
+    fetch(urlResumen, { headers: authHeaders }).then(r => r.json()).then(d => setResumen(d)).catch(console.error);
+  };
+
   const cargarDatos = () => {
     fetch('/api/admin/turnos', { headers: authHeaders }).then(r => r.json()).then(d => Array.isArray(d) && setTurnos(d)).catch(console.error);
     fetch('/api/admin/servicios', { headers: authHeaders }).then(r => r.json()).then(d => Array.isArray(d) && setServicios(d)).catch(console.error);
     fetch('/api/admin/mecanicos', { headers: authHeaders }).then(r => r.json()).then(d => Array.isArray(d) && setMecanicos(d)).catch(console.error);
-    fetch('/api/admin/facturas', { headers: authHeaders }).then(r => r.json()).then(d => Array.isArray(d) && setFacturas(d)).catch(console.error);
-    fetch('/api/admin/facturas/resumen', { headers: authHeaders }).then(r => r.json()).then(d => setResumen(d)).catch(console.error);
+    cargarFacturasMensuales(filtroAnio, filtroMes);
   };
 
   useEffect(() => {
     cargarDatos();
   }, [token]);
+
+  useEffect(() => {
+    if (subTab === 'facturas') {
+      cargarFacturasMensuales(filtroAnio, filtroMes);
+    }
+  }, [filtroAnio, filtroMes]);
 
   const cambiarEstadoTurno = (id, nuevoEstado) => {
     fetch(`/api/admin/turnos/${id}/estado?estado=${nuevoEstado}`, {
@@ -86,19 +111,63 @@ export default function AdminDashboard({ token }) {
     if (confirm("¿Eliminar registro financiero?")) fetch(`/api/admin/facturas/${id}`, { method: 'DELETE', headers: authHeaders }).then(() => cargarDatos());
   };
 
+  const guardarNuevaClave = (e) => {
+    e.preventDefault();
+    setMensajeClave(null);
+    setErrorClave(null);
+
+    fetch('/api/admin/auth/cambiar-clave', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify(formClave)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Contraseña actual incorrecta");
+        return res.json();
+      })
+      .then(data => {
+        setMensajeClave("¡Contraseña modificada correctamente!");
+        setFormClave({ claveActual: '', claveNueva: '' });
+        setTimeout(() => setShowModal(false), 1500);
+      })
+      .catch(err => setErrorClave(err.message));
+  };
+
   const turnosFiltrados = turnos.filter(t => 
     t.clienteNombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
     t.vehiculoPatente?.toLowerCase().includes(busqueda.toLowerCase())
   );
 
+  const meses = [
+    { num: 1, nombre: 'Enero' }, { num: 2, nombre: 'Febrero' }, { num: 3, nombre: 'Marzo' },
+    { num: 4, nombre: 'Abril' }, { num: 5, nombre: 'Mayo' }, { num: 6, nombre: 'Junio' },
+    { num: 7, nombre: 'Julio' }, { num: 8, nombre: 'Agosto' }, { num: 9, nombre: 'Septiembre' },
+    { num: 10, nombre: 'Octubre' }, { num: 11, nombre: 'Noviembre' }, { num: 12, nombre: 'Diciembre' }
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Header del Admin con botón de cambiar clave */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold font-heading text-white tracking-wide">PANEL DE CONTROL ADMINISTRATIVO</h1>
+          <p className="text-slate-400 text-xs">Gestión integral del taller, turnos y balance financiero</p>
+        </div>
+        <button
+          onClick={() => { setModalType('clave'); setMensajeClave(null); setErrorClave(null); setShowModal(true); }}
+          className="bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-all shadow-md"
+        >
+          <KeyRound className="w-4 h-4" />
+          <span>CAMBIAR CONTRASEÑA</span>
+        </button>
+      </div>
+
       {/* Resumen Financiero Top Cards */}
       {resumen && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl flex items-center justify-between shadow-lg">
             <div>
-              <p className="text-xs text-slate-400 font-semibold uppercase">Total Ingresos</p>
+              <p className="text-xs text-slate-400 font-semibold uppercase">Ingresos ({meses.find(m => m.num === Number(filtroMes))?.nombre})</p>
               <h3 className="text-3xl font-extrabold font-heading text-emerald-400">
                 ${Number(resumen.totalIngresos).toLocaleString('es-AR')}
               </h3>
@@ -110,7 +179,7 @@ export default function AdminDashboard({ token }) {
 
           <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl flex items-center justify-between shadow-lg">
             <div>
-              <p className="text-xs text-slate-400 font-semibold uppercase">Total Gastos</p>
+              <p className="text-xs text-slate-400 font-semibold uppercase">Gastos ({meses.find(m => m.num === Number(filtroMes))?.nombre})</p>
               <h3 className="text-3xl font-extrabold font-heading text-rose-400">
                 ${Number(resumen.totalGastos).toLocaleString('es-AR')}
               </h3>
@@ -122,7 +191,7 @@ export default function AdminDashboard({ token }) {
 
           <div className="bg-slate-800 border border-slate-700 p-6 rounded-2xl flex items-center justify-between shadow-lg">
             <div>
-              <p className="text-xs text-slate-400 font-semibold uppercase">Balance Neto</p>
+              <p className="text-xs text-slate-400 font-semibold uppercase">Balance Neto ({meses.find(m => m.num === Number(filtroMes))?.nombre})</p>
               <h3 className={`text-3xl font-extrabold font-heading ${Number(resumen.balanceNeto) >= 0 ? 'text-amber-400' : 'text-rose-400'}`}>
                 ${Number(resumen.balanceNeto).toLocaleString('es-AR')}
               </h3>
@@ -173,7 +242,7 @@ export default function AdminDashboard({ token }) {
           }`}
         >
           <DollarSign className="w-5 h-5" />
-          <span>FACTURACIÓN Y GASTOS ({facturas.length})</span>
+          <span>FACTURACIÓN MENSUAL ({facturas.length})</span>
         </button>
       </div>
 
@@ -345,19 +414,48 @@ export default function AdminDashboard({ token }) {
         </div>
       )}
 
-      {/* VISTA 4: FACTURACIÓN Y GASTOS */}
+      {/* VISTA 4: FACTURACIÓN Y CONTROL DE GASTOS POR MES */}
       {subTab === 'facturas' && (
-        <div className="space-y-4">
-          <div className="flex justify-end">
-            <button
-              onClick={() => { setModalType('factura'); setShowModal(true); }}
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm flex items-center space-x-2 shadow-md"
-            >
-              <Plus className="w-4 h-4" />
-              <span>REGISTRAR INGRESO / GASTO</span>
-            </button>
+        <div className="space-y-6">
+          {/* Selector de Mes y Año */}
+          <div className="bg-slate-800 p-4 rounded-2xl border border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <Filter className="w-5 h-5 text-amber-500" />
+              <span className="text-sm font-bold font-heading uppercase text-white">FILTRAR FACTURACIÓN POR MES:</span>
+            </div>
+
+            <div className="flex items-center space-x-3 w-full sm:w-auto">
+              <select
+                value={filtroMes}
+                onChange={(e) => setFiltroMes(Number(e.target.value))}
+                className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+              >
+                {meses.map(m => (
+                  <option key={m.num} value={m.num}>{m.nombre}</option>
+                ))}
+              </select>
+
+              <select
+                value={filtroAnio}
+                onChange={(e) => setFiltroAnio(Number(e.target.value))}
+                className="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+              >
+                <option value={2026}>2026</option>
+                <option value={2025}>2025</option>
+                <option value={2024}>2024</option>
+              </select>
+
+              <button
+                onClick={() => { setModalType('factura'); setShowModal(true); }}
+                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm flex items-center space-x-2 shadow-md whitespace-nowrap"
+              >
+                <Plus className="w-4 h-4" />
+                <span>NUEVA FACTURA / GASTO</span>
+              </button>
+            </div>
           </div>
 
+          {/* Tabla de Facturas del Mes Seleccionado */}
           <div className="bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-300">
@@ -372,31 +470,39 @@ export default function AdminDashboard({ token }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700/60">
-                  {facturas.map((f) => (
-                    <tr key={f.id} className="hover:bg-slate-750">
-                      <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
-                          f.tipo === 'INGRESO' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
-                        }`}>
-                          {f.tipo}
-                        </span>
-                      </td>
-                      <td className="p-4 font-medium text-white">{f.concepto}</td>
-                      <td className={`p-4 font-extrabold font-heading text-lg ${f.tipo === 'INGRESO' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        ${Number(f.monto).toLocaleString('es-AR')}
-                      </td>
-                      <td className="p-4 text-xs">{f.metodoPago || '-'}</td>
-                      <td className="p-4 text-xs text-slate-400">{f.fecha ? new Date(f.fecha).toLocaleDateString('es-AR') : '-'}</td>
-                      <td className="p-4 text-right">
-                        <button
-                          onClick={() => eliminarFactura(f.id)}
-                          className="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                  {facturas.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-8 text-center text-slate-400">
+                        No hay facturas ni gastos registrados para este mes.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    facturas.map((f) => (
+                      <tr key={f.id} className="hover:bg-slate-750">
+                        <td className="p-4">
+                          <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                            f.tipo === 'INGRESO' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
+                          }`}>
+                            {f.tipo}
+                          </span>
+                        </td>
+                        <td className="p-4 font-medium text-white">{f.concepto}</td>
+                        <td className={`p-4 font-extrabold font-heading text-lg ${f.tipo === 'INGRESO' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          ${Number(f.monto).toLocaleString('es-AR')}
+                        </td>
+                        <td className="p-4 text-xs">{f.metodoPago || '-'}</td>
+                        <td className="p-4 text-xs text-slate-400">{f.fecha ? new Date(f.fecha).toLocaleDateString('es-AR') : '-'}</td>
+                        <td className="p-4 text-right">
+                          <button
+                            onClick={() => eliminarFactura(f.id)}
+                            className="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -404,12 +510,42 @@ export default function AdminDashboard({ token }) {
         </div>
       )}
 
-      {/* MODAL GENÉRICO PARA CREAR ITEMS */}
+      {/* MODAL GENÉRICO Y CAMBIO DE CONTRASEÑA */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-800 border border-slate-700 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
-            <h3 className="text-2xl font-bold font-heading text-white uppercase">NUEVO REGISTRO ({modalType})</h3>
+            <h3 className="text-2xl font-bold font-heading text-white uppercase">
+              {modalType === 'clave' ? 'CAMBIAR CONTRASEÑA' : `NUEVO REGISTRO (${modalType})`}
+            </h3>
             
+            {modalType === 'clave' && (
+              <form onSubmit={guardarNuevaClave} className="space-y-4">
+                {mensajeClave && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-3 rounded-xl text-xs">
+                    {mensajeClave}
+                  </div>
+                )}
+                {errorClave && (
+                  <div className="bg-rose-500/10 border border-rose-500/30 text-rose-400 p-3 rounded-xl text-xs flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{errorClave}</span>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-xs text-slate-400 uppercase font-semibold mb-1">Contraseña Actual</label>
+                  <input required type="password" placeholder="••••••••" value={formClave.claveActual} onChange={e => setFormClave({...formClave, claveActual: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-400 uppercase font-semibold mb-1">Nueva Contraseña</label>
+                  <input required type="password" placeholder="••••••••" value={formClave.claveNueva} onChange={e => setFormClave({...formClave, claveNueva: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />
+                </div>
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-sm text-slate-300">Cancelar</button>
+                  <button type="submit" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-sm">Actualizar</button>
+                </div>
+              </form>
+            )}
+
             {modalType === 'servicio' && (
               <form onSubmit={guardarServicio} className="space-y-3">
                 <input required placeholder="Nombre del Servicio" value={formServicio.nombre} onChange={e => setFormServicio({...formServicio, nombre: e.target.value})} className="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-xl text-sm text-white" />

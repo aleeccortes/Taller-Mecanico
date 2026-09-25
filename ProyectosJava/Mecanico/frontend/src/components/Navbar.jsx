@@ -1,9 +1,9 @@
 import React from 'react';
-import { Wrench, Calendar, Bot, ShieldCheck, LogOut, Car } from 'lucide-react';
+import { Wrench, Calendar, LogOut, Car, ShieldCheck } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab, token, onLogout }) {
   return (
-    <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-xl">
+    <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo Taller */}
@@ -19,12 +19,12 @@ export default function Navbar({ activeTab, setActiveTab, token, onLogout }) {
                 TALLER MECÁNICO
               </span>
               <p className="text-xs text-amber-500 font-semibold tracking-widest uppercase -mt-1">
-                Servicio Integral & Diagnóstico IA
+                Servicio Integral & Diagnóstico
               </p>
             </div>
           </div>
 
-          {/* Menú de Navegación */}
+          {/* Menú de Navegación del Cliente */}
           <div className="flex items-center space-x-2 sm:space-x-4">
             <button
               onClick={() => setActiveTab('servicios')}
@@ -50,19 +50,8 @@ export default function Navbar({ activeTab, setActiveTab, token, onLogout }) {
               <span>Sacar Turno</span>
             </button>
 
-            <button
-              onClick={() => setActiveTab('ia')}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                activeTab === 'ia' 
-                  ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 glow-orange' 
-                  : 'text-indigo-300 hover:bg-slate-800 hover:text-indigo-200'
-              }`}
-            >
-              <Bot className="w-4 h-4 text-indigo-400 animate-pulse" />
-              <span className="font-semibold">Asistente IA</span>
-            </button>
-
-            {token ? (
+            {/* Solo si el Admin está autenticado, muestra su acceso al panel */}
+            {token && (
               <div className="flex items-center space-x-3 pl-4 border-l border-slate-700">
                 <button
                   onClick={() => setActiveTab('admin')}
@@ -84,14 +73,6 @@ export default function Navbar({ activeTab, setActiveTab, token, onLogout }) {
                   <LogOut className="w-5 h-5" />
                 </button>
               </div>
-            ) : (
-              <button
-                onClick={() => setActiveTab('login')}
-                className="flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm shadow-md hover:shadow-orange-500/20 transition-all"
-              >
-                <ShieldCheck className="w-4 h-4" />
-                <span>Acceso Admin</span>
-              </button>
             )}
           </div>
         </div>
