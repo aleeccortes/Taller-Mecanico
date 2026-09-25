@@ -2,6 +2,9 @@ package com.Taller.Mecanico.controller;
 
 import com.Taller.Mecanico.dto.TurnoDTO;
 import com.Taller.Mecanico.model.EstadoTurno;
+import com.Taller.Mecanico.model.Turno;
+import com.Taller.Mecanico.repository.TurnoRepository;
+import com.Taller.Mecanico.service.NotificacionService;
 import com.Taller.Mecanico.service.TurnoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin/turnos")
@@ -18,6 +22,8 @@ import java.util.List;
 public class TurnoController {
 
     private final TurnoService turnoService;
+    private final TurnoRepository turnoRepository;
+    private final NotificacionService notificacionService;
 
     @GetMapping
     public ResponseEntity<List<TurnoDTO>> obtenerTodosLosTurnos(@RequestParam(required = false) EstadoTurno estado,
@@ -49,6 +55,17 @@ public class TurnoController {
     @PatchMapping("/{id}/estado")
     public ResponseEntity<TurnoDTO> cambiarEstadoTurno(@PathVariable Long id, @RequestParam EstadoTurno estado) {
         return ResponseEntity.ok(turnoService.cambiarEstadoTurno(id, estado));
+    }
+
+    @PostMapping("/{id}/recordatorio")
+    public ResponseEntity<Map<String, String>> enviarRecordatorioManual(@PathVariable Long id) {
+        Turno turno = turnoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Turno no encontrado con id: " + id));
+
+        notificacionService.enviarRecordatorioEmail(turno);
+        notificacionService.enviarRecordatorioWhatsApp(turno);
+
+        return ResponseEntity.ok(Map.of("mensaje", "Recordatorios por Email y WhatsApp enviados exitosamente al cliente"));
     }
 
     @DeleteMapping("/{id}")

@@ -50,4 +50,10 @@ public class Turno {
 
     @Column(length = 1000)
     private String notas;
+
+    @Builder.Default
+    private Boolean recordatorioEmailEnviado = false;
+
+    @Builder.Default
+    private Boolean recordatorioWhatsappEnviado = false;
 }

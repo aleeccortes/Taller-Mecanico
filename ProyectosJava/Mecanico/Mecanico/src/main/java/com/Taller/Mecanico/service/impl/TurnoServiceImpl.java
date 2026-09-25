@@ -9,6 +9,7 @@ import com.Taller.Mecanico.model.Turno;
 import com.Taller.Mecanico.repository.MecanicoRepository;
 import com.Taller.Mecanico.repository.ServicioRepository;
 import com.Taller.Mecanico.repository.TurnoRepository;
+import com.Taller.Mecanico.service.NotificacionService;
 import com.Taller.Mecanico.service.TurnoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ public class TurnoServiceImpl implements TurnoService {
     private final TurnoRepository turnoRepository;
     private final ServicioRepository servicioRepository;
     private final MecanicoRepository mecanicoRepository;
+    private final NotificacionService notificacionService;
 
     @Override
     public List<TurnoDTO> obtenerTodosLosTurnos() {
@@ -60,6 +62,8 @@ public class TurnoServiceImpl implements TurnoService {
                 .fechaHora(dto.getFechaHora())
                 .estado(EstadoTurno.PENDIENTE)
                 .notas(dto.getNotas())
+                .recordatorioEmailEnviado(false)
+                .recordatorioWhatsappEnviado(false)
                 .build();
 
         Turno guardado = turnoRepository.save(turno);
@@ -88,6 +92,8 @@ public class TurnoServiceImpl implements TurnoService {
                 .fechaHora(dto.getFechaHora())
                 .estado(dto.getEstado() != null ? dto.getEstado() : EstadoTurno.PENDIENTE)
                 .notas(dto.getNotas())
+                .recordatorioEmailEnviado(false)
+                .recordatorioWhatsappEnviado(false)
                 .build();
 
         Turno guardado = turnoRepository.save(turno);
@@ -165,6 +171,8 @@ public class TurnoServiceImpl implements TurnoService {
                 .fechaHora(turno.getFechaHora())
                 .estado(turno.getEstado())
                 .notas(turno.getNotas())
+                .recordatorioEmailEnviado(turno.getRecordatorioEmailEnviado())
+                .recordatorioWhatsappEnviado(turno.getRecordatorioWhatsappEnviado())
                 .build();
     }
 }

@@ -24,4 +24,6 @@ public class TurnoDTO {
     private LocalDateTime fechaHora;
     private EstadoTurno estado;
     private String notas;
+    private Boolean recordatorioEmailEnviado;
+    private Boolean recordatorioWhatsappEnviado;
 }

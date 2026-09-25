@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Wrench, Users, DollarSign, Plus, Trash2, CheckCircle, Clock, XCircle, Search, TrendingUp, TrendingDown, Wallet, KeyRound, Filter, AlertCircle, Image as ImageIcon } from 'lucide-react';
+import { Calendar, Wrench, Users, DollarSign, Plus, Trash2, CheckCircle, Clock, XCircle, Search, TrendingUp, TrendingDown, Wallet, KeyRound, Filter, AlertCircle, Send, MessageSquare, Mail } from 'lucide-react';
 
 export default function AdminDashboard({ token }) {
   const [subTab, setSubTab] = useState('turnos');
@@ -9,6 +9,7 @@ export default function AdminDashboard({ token }) {
   const [facturas, setFacturas] = useState([]);
   const [resumen, setResumen] = useState(null);
   const [busqueda, setBusqueda] = useState('');
+  const [mensajeNotificacion, setMensajeNotificacion] = useState(null);
 
   // Filtros de Facturación Mensual
   const fechaActual = new Date();
@@ -64,6 +65,20 @@ export default function AdminDashboard({ token }) {
       method: 'PATCH',
       headers: authHeaders
     }).then(() => cargarDatos());
+  };
+
+  const enviarRecordatorioManual = (id) => {
+    fetch(`/api/admin/turnos/${id}/recordatorio`, {
+      method: 'POST',
+      headers: authHeaders
+    })
+      .then(res => res.json())
+      .then(data => {
+        setMensajeNotificacion(data.mensaje);
+        cargarDatos();
+        setTimeout(() => setMensajeNotificacion(null), 3000);
+      })
+      .catch(console.error);
   };
 
   const eliminarTurno = (id) => {
@@ -151,7 +166,7 @@ export default function AdminDashboard({ token }) {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800 pb-4 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold font-heading text-white tracking-wide">PANEL DE CONTROL ADMINISTRATIVO</h1>
-          <p className="text-slate-400 text-xs">Gestión integral del taller, turnos y balance financiero</p>
+          <p className="text-slate-400 text-xs">Gestión integral del taller, turnos, recordatorios y balance financiero</p>
         </div>
         <button
           onClick={() => { setModalType('clave'); setMensajeClave(null); setErrorClave(null); setShowModal(true); }}
@@ -161,6 +176,13 @@ export default function AdminDashboard({ token }) {
           <span>CAMBIAR CONTRASEÑA</span>
         </button>
       </div>
+
+      {mensajeNotificacion && (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-2xl flex items-center space-x-3 text-sm animate-fade-in">
+          <CheckCircle className="w-5 h-5 flex-shrink-0" />
+          <span>{mensajeNotificacion}</span>
+        </div>
+      )}
 
       {/* Resumen Financiero Top Cards */}
       {resumen && (
@@ -246,7 +268,7 @@ export default function AdminDashboard({ token }) {
         </button>
       </div>
 
-      {/* VISTA 1: TURNOS */}
+      {/* VISTA 1: TURNOS Y RECORDATORIOS */}
       {subTab === 'turnos' && (
         <div className="space-y-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -267,11 +289,11 @@ export default function AdminDashboard({ token }) {
               <table className="w-full text-left text-sm text-slate-300">
                 <thead className="bg-slate-900 text-xs text-amber-400 font-semibold uppercase tracking-wider border-b border-slate-700">
                   <tr>
-                    <th className="p-4">Cliente / Teléfono</th>
+                    <th className="p-4">Cliente / Contacto</th>
                     <th className="p-4">Vehículo / Patente</th>
                     <th className="p-4">Servicio</th>
                     <th className="p-4">Fecha y Hora</th>
-                    <th className="p-4">Estado</th>
+                    <th className="p-4">Estado / Recordatorios</th>
                     <th className="p-4 text-right">Acciones</th>
                   </tr>
                 </thead>
@@ -281,6 +303,7 @@ export default function AdminDashboard({ token }) {
                       <td className="p-4 font-medium text-white">
                         <div>{t.clienteNombre}</div>
                         <div className="text-xs text-slate-400">{t.clienteTelefono}</div>
+                        {t.clienteEmail && <div className="text-[11px] text-slate-500">{t.clienteEmail}</div>}
                       </td>
                       <td className="p-4">
                         <div>{t.vehiculoModelo}</div>
@@ -292,8 +315,8 @@ export default function AdminDashboard({ token }) {
                       <td className="p-4 text-xs text-slate-300">
                         {t.fechaHora ? new Date(t.fechaHora).toLocaleString('es-AR') : '-'}
                       </td>
-                      <td className="p-4">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+                      <td className="p-4 space-y-1">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
                           t.estado === 'PENDIENTE' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' :
                           t.estado === 'EN_PROCESO' ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' :
                           t.estado === 'FINALIZADO' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
@@ -301,8 +324,23 @@ export default function AdminDashboard({ token }) {
                         }`}>
                           {t.estado}
                         </span>
+                        <div className="flex items-center space-x-1.5 text-[10px]">
+                          <span className={`px-1.5 py-0.5 rounded ${t.recordatorioEmailEnviado ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
+                            ✉ Email {t.recordatorioEmailEnviado ? '✓' : '—'}
+                          </span>
+                          <span className={`px-1.5 py-0.5 rounded ${t.recordatorioWhatsappEnviado ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-700 text-slate-400'}`}>
+                            💬 WA {t.recordatorioWhatsappEnviado ? '✓' : '—'}
+                          </span>
+                        </div>
                       </td>
                       <td className="p-4 text-right space-x-1">
+                        <button
+                          onClick={() => enviarRecordatorioManual(t.id)}
+                          title="Enviar Recordatorio (Email & WhatsApp)"
+                          className="p-1.5 bg-indigo-900/60 hover:bg-indigo-600 text-indigo-300 hover:text-white rounded-lg transition-colors border border-indigo-500/30"
+                        >
+                          <Send className="w-4 h-4" />
+                        </button>
                         <button
                           onClick={() => cambiarEstadoTurno(t.id, 'EN_PROCESO')}
                           title="Iniciar Trabajo"
