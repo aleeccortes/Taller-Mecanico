@@ -4,6 +4,7 @@ import com.Taller.Mecanico.model.*;
 import com.Taller.Mecanico.repository.*;
 import com.Taller.Mecanico.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +21,16 @@ public class DataInitializer implements CommandLineRunner {
     private final TurnoRepository turnoRepository;
     private final FacturaRepository facturaRepository;
 
+    @Value("${admin.username:admin}")
+    private String adminUsername;
+
+    @Value("${admin.password:admin123}")
+    private String adminPassword;
+
     @Override
     public void run(String... args) {
-        // 1. Inicializar usuario Administrador
-        authService.registrarAdminInicial("admin", "admin123");
+        // 1. Inicializar usuario Administrador desde variables de entorno
+        authService.registrarAdminInicial(adminUsername, adminPassword);
 
         // 2. Cargar servicios si no existen
         if (servicioRepository.count() == 0) {

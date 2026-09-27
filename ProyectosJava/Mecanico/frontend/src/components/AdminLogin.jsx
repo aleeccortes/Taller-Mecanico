@@ -62,7 +62,7 @@ export default function AdminLogin({ onLoginSuccess }) {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="Ingrese su usuario"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -77,7 +77,7 @@ export default function AdminLogin({ onLoginSuccess }) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="admin123"
+                placeholder="••••••••"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500"
               />
             </div>
