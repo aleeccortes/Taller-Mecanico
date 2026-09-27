@@ -60,6 +60,7 @@ export default function AdminLogin({ onLoginSuccess }) {
               <input
                 type="text"
                 required
+                autoComplete="off"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Ingrese su usuario"
@@ -75,6 +76,7 @@ export default function AdminLogin({ onLoginSuccess }) {
               <input
                 type="password"
                 required
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
