@@ -15,7 +15,10 @@ export default function AdminLogin({ onLoginSuccess }) {
     fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ 
+        username: username.trim(), 
+        password: password.trim() 
+      })
     })
       .then(res => {
         if (!res.ok) throw new Error("Credenciales inválidas. Verifique usuario y contraseña.");
@@ -59,7 +62,7 @@ export default function AdminLogin({ onLoginSuccess }) {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Nombre de usuario"
+                placeholder="admin"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500"
               />
             </div>
@@ -74,7 +77,7 @@ export default function AdminLogin({ onLoginSuccess }) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="admin123"
                 className="w-full bg-slate-900 border border-slate-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-amber-500"
               />
             </div>

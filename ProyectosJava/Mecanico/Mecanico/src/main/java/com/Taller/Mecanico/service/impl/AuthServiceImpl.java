@@ -21,10 +21,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponseDTO iniciarSesion(LoginRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findByUsername(dto.getUsername())
+        String usernameLimpio = dto.getUsername() != null ? dto.getUsername().trim() : "";
+        String passwordLimpio = dto.getPassword() != null ? dto.getPassword().trim() : "";
+
+        Usuario usuario = usuarioRepository.findByUsername(usernameLimpio)
                 .orElseThrow(() -> new RuntimeException("Usuario o contraseña incorrectos"));
 
-        if (!passwordEncoder.matches(dto.getPassword(), usuario.getPassword())) {
+        if (!passwordEncoder.matches(passwordLimpio, usuario.getPassword())) {
             throw new RuntimeException("Usuario o contraseña incorrectos");
         }
 
@@ -40,13 +43,20 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void registrarAdminInicial(String username, String password) {
-        if (!usuarioRepository.existsByUsername(username)) {
-            Usuario admin = Usuario.builder()
+        Usuario admin = usuarioRepository.findByUsername(username).orElse(null);
+        if (admin == null) {
+            admin = Usuario.builder()
                     .username(username)
                     .password(passwordEncoder.encode(password))
                     .rol(RolUsuario.ROLE_ADMIN)
                     .build();
             usuarioRepository.save(admin);
+        } else {
+            // Asegurar que las credenciales iniciales coincidan si se reinicia el sistema
+            if (!passwordEncoder.matches(password, admin.getPassword())) {
+                admin.setPassword(passwordEncoder.encode(password));
+                usuarioRepository.save(admin);
+            }
         }
     }
 
@@ -63,7 +73,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("La nueva contraseña debe tener al menos 4 caracteres");
         }
 
-        usuario.setPassword(passwordEncoder.encode(claveNueva));
+        usuario.setPassword(passwordEncoder.encode(claveNueva.trim()));
         usuarioRepository.save(usuario);
     }
 }
